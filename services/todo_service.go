@@ -3,19 +3,19 @@ package services
 import (
 	"errors"
 	"time"
-
+	"github.com/Joaquim-Jambo/DoneGo/models"
 	"github.com/google/uuid"
 )
 
-func NewTodo() *Todos {
-	return &Todos{
+func NewTodo() *models.Todos {
+	return &models.Todos{
 		listTodo: make(map[string]Todo),
 	}
 }
 
-func (t *Todos) addTodo(titulo string, descricao string, categoria string) Todo {
+func (t *models.Todos) addTodo(titulo string, descricao string, categoria string) models.Todo {
 	id := uuid.New().String()
-	t.listTodo[id] = Todo{
+	t.listTodo[id] = models.Todo{
 		id:         id,
 		titulo:     titulo,
 		descricao:  descricao,
@@ -26,8 +26,8 @@ func (t *Todos) addTodo(titulo string, descricao string, categoria string) Todo 
 	}
 	return t.listTodo[id]
 }
-func (t *Todos) getByCategory(categoria string) ([]Todo, error) {
-	var todos []Todo
+func (t *models.Todos) getByCategory(categoria string) ([]models.Todo, error) {
+	var todos []models.Todo
 	for _, todo := range t.listTodo {
 		if todo.categoria == categoria {
 			todos = append(todos, todo)
@@ -38,17 +38,17 @@ func (t *Todos) getByCategory(categoria string) ([]Todo, error) {
 	}
 	return todos, nil
 }
-func (t *Todos) getById(id string) (Todo, error) {
+func (t *models.Todos) getById(id string) (models.Todo, error) {
 	Todo_, exist := t.listTodo[id]
 	if !exist {
-		return Todo{}, errors.New("Todo não encontrado")
+		return models.Todo{}, errors.New("Todo não encontrado")
 	}
 	return Todo_, nil
 }
-func (t *Todos) completedTodo(id string) (Todo, error) {
+func (t *models.Todos) completedTodo(id string) (models.Todo, error) {
 	Todo_, exist := t.listTodo[id]
 	if !exist {
-		return Todo{}, errors.New("Todo não encontrado")
+		return models.Todo{}, errors.New("Todo não encontrado")
 	}
 	Todo_.estado = true
 	Todo_.DateUpdate = time.Now()
@@ -56,18 +56,18 @@ func (t *Todos) completedTodo(id string) (Todo, error) {
 	return Todo_, nil
 
 }
-func (t *Todos) deleteTodo(id string) (Todo, error) {
+func (t *models.Todos) deleteTodo(id string) (models.Todo, error) {
 	Todo_, exist := t.listTodo[id]
 	if !exist {
-		return Todo{}, errors.New("Todo não encontrado")
+		return models.Todo{}, errors.New("Todo não encontrado")
 	}
 	delete(t.listTodo, id)
 	return Todo_, nil
 }
-func (t *Todos) updateTodo(id string, todo Todo) (Todo, error) {
+func (t *Todos) updateTodo(id string, todo models.Todo) (models.Todo, error) {
 	Todo_, exist := t.listTodo[id]
 	if !exist {
-		return Todo{}, errors.New("Todo não encontrado !")
+		return models.Todo{}, errors.New("Todo não encontrado !")
 	}
 	Todo_.titulo = todo.titulo
 	Todo_.descricao = todo.descricao
@@ -76,8 +76,8 @@ func (t *Todos) updateTodo(id string, todo Todo) (Todo, error) {
 	t.listTodo[id] = Todo_
 	return Todo_, nil
 }
-func (t *Todos) getTodo() []Todo {
-	var todos []Todo
+func (t *models.Todos) getTodo() []models.Todo {
+	var todos []models.Todo
 
 	for _, todo := range t.listTodo {
 		todos = append(todos, todo)

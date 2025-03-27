@@ -1,26 +1,16 @@
 package main
 import (
-	"github.com/google/uuid"
-	"time"
-	"errors"
+	"github.com/Joaquim-Jambo/DoneGo/services"
+	"github.com/Joaquim-Jambo/DoneGo/utils"
 	"fmt"
 	"bufio"
 	"os"
 )
 
-type gerenTodo interface {
-	addTodo(titulo string, descricao string, categoria string) Todo
-	updateTodo(id string, todo Todo) (Todo, error)
-	deleteTodo(id string) (Todo, error)
-	getTodo() []Todo
-	completedTodo(id string) (Todo, error)
-	getByCategory(categoria string) Todo
-	getById(id string) Todo
-}
 
 
 func main(){
-	todo := NewTodo()
+	todo := services.NewTodo()
 	reader := bufio.NewReader(os.Stdin)
 	var menu int
 	
@@ -39,7 +29,7 @@ func main(){
 		switch menu{
 			case 1:
 				for _, todo_:= range todo.getTodo(){
-					emojiCategoria := obterEmojiCategoria(todo_.categoria)
+					emojiCategoria := utils.obterEmojiCategoria(todo_.categoria)
 					fmt.Println("🗂️ Lista de Todos:")
 					fmt.Println("-------------------------------")
 					fmt.Printf(
@@ -49,7 +39,7 @@ func main(){
 						todo_.titulo,
 						todo_.descricao,
 						todo_.DateCreat.Format("02/01/2006 15:04"),
-						statusEmoji(todo_.estado),
+						utils.statusEmoji(todo_.estado),
 					)
 					
 				}

@@ -1,4 +1,5 @@
 package utils
+
 func obterEmojiCategoria(categoria string) string {
 	switch categoria {
 	case "Estudo":
@@ -23,8 +24,8 @@ func obterEmojiCategoria(categoria string) string {
 		return "📝"
 	}
 }
-func statusEmoji(estado bool) string{
-	if estado{
+func statusEmoji(estado bool) string {
+	if estado {
 		return "✅ Concluído"
 	}
 	return "❌ Pendente"
