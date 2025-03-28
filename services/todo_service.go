@@ -3,33 +3,52 @@ package services
 import (
 	"errors"
 	"time"
+
 	"github.com/Joaquim-Jambo/DoneGo/models"
 	"github.com/google/uuid"
 )
 
-func NewTodo() *models.Todos {
-	return &models.Todos{
-		listTodo: make(map[string]Todo),
+// Interface para os métodos do serviço de tarefas
+type TodoService interface {
+	AddTodo(titulo string, descricao string, categoria string) models.Todo
+	GetByCategory(categoria string) ([]models.Todo, error)
+	GetById(id string) (models.Todo, error)
+	CompletedTodo(id string) (models.Todo, error)
+	DeleteTodo(id string) (models.Todo, error)
+	UpdateTodo(id string, todo models.Todo) (models.Todo, error)
+	GetTodo() []models.Todo
+}
+
+// Struct para gerenciar a lista de tarefas
+type TodoManager struct {
+	ListTodo map[string]models.Todo
+}
+
+// Construtor para inicializar o TodoManager
+func NewTodo() *TodoManager {
+	return &TodoManager{
+		ListTodo: make(map[string]models.Todo),
 	}
 }
 
-func (t *models.Todos) addTodo(titulo string, descricao string, categoria string) models.Todo {
+func (t *TodoManager) AddTodo(titulo string, descricao string, categoria string) models.Todo {
 	id := uuid.New().String()
-	t.listTodo[id] = models.Todo{
-		id:         id,
-		titulo:     titulo,
-		descricao:  descricao,
-		estado:     false,
-		categoria:  categoria,
+	t.ListTodo[id] = models.Todo{
+		ID:         id,
+		Titulo:     titulo,
+		Descricao:  descricao,
+		Categoria:  categoria,
+		Estado:     false,
 		DateCreat:  time.Now(),
 		DateUpdate: time.Now(),
 	}
-	return t.listTodo[id]
+	return t.ListTodo[id]
 }
-func (t *models.Todos) getByCategory(categoria string) ([]models.Todo, error) {
+
+func (t *TodoManager) GetByCategory(categoria string) ([]models.Todo, error) {
 	var todos []models.Todo
-	for _, todo := range t.listTodo {
-		if todo.categoria == categoria {
+	for _, todo := range t.ListTodo {
+		if todo.Categoria == categoria {
 			todos = append(todos, todo)
 		}
 	}
@@ -38,48 +57,51 @@ func (t *models.Todos) getByCategory(categoria string) ([]models.Todo, error) {
 	}
 	return todos, nil
 }
-func (t *models.Todos) getById(id string) (models.Todo, error) {
-	Todo_, exist := t.listTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
-	}
-	return Todo_, nil
-}
-func (t *models.Todos) completedTodo(id string) (models.Todo, error) {
-	Todo_, exist := t.listTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
-	}
-	Todo_.estado = true
-	Todo_.DateUpdate = time.Now()
-	t.listTodo[id] = Todo_
-	return Todo_, nil
 
-}
-func (t *models.Todos) deleteTodo(id string) (models.Todo, error) {
-	Todo_, exist := t.listTodo[id]
+func (t *TodoManager) GetById(id string) (models.Todo, error) {
+	todo, exist := t.ListTodo[id]
 	if !exist {
 		return models.Todo{}, errors.New("Todo não encontrado")
 	}
-	delete(t.listTodo, id)
-	return Todo_, nil
+	return todo, nil
 }
-func (t *Todos) updateTodo(id string, todo models.Todo) (models.Todo, error) {
-	Todo_, exist := t.listTodo[id]
+
+func (t *TodoManager) CompletedTodo(id string) (models.Todo, error) {
+	todo, exist := t.ListTodo[id]
 	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado !")
+		return models.Todo{}, errors.New("Todo não encontrado")
 	}
-	Todo_.titulo = todo.titulo
-	Todo_.descricao = todo.descricao
-	Todo_.categoria = todo.categoria
-	Todo_.DateUpdate = time.Now()
-	t.listTodo[id] = Todo_
-	return Todo_, nil
+	todo.Estado = true
+	todo.DateUpdate = time.Now()
+	t.ListTodo[id] = todo
+	return todo, nil
 }
-func (t *models.Todos) getTodo() []models.Todo {
+
+func (t *TodoManager) DeleteTodo(id string) (models.Todo, error) {
+	todo, exist := t.ListTodo[id]
+	if !exist {
+		return models.Todo{}, errors.New("Todo não encontrado")
+	}
+	delete(t.ListTodo, id)
+	return todo, nil
+}
+
+func (t *TodoManager) UpdateTodo(id string, todo models.Todo) (models.Todo, error) {
+	todoAtual, exist := t.ListTodo[id]
+	if !exist {
+		return models.Todo{}, errors.New("Todo não encontrado")
+	}
+	todoAtual.Titulo = todo.Titulo
+	todoAtual.Descricao = todo.Descricao
+	todoAtual.Categoria = todo.Categoria
+	todoAtual.DateUpdate = time.Now()
+	t.ListTodo[id] = todoAtual
+	return todoAtual, nil
+}
+
+func (t *TodoManager) GetTodo() []models.Todo {
 	var todos []models.Todo
-
-	for _, todo := range t.listTodo {
+	for _, todo := range t.ListTodo {
 		todos = append(todos, todo)
 	}
 	return todos
