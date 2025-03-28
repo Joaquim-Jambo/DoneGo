@@ -8,17 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Interface para os métodos do serviço de tarefas
-type TodoService interface {
-	AddTodo(titulo string, descricao string, categoria string) models.Todo
-	GetByCategory(categoria string) ([]models.Todo, error)
-	GetById(id string) (models.Todo, error)
-	CompletedTodo(id string) (models.Todo, error)
-	DeleteTodo(id string) (models.Todo, error)
-	UpdateTodo(id string, todo models.Todo) (models.Todo, error)
-	GetTodo() []models.Todo
-}
-
 // Struct para gerenciar a lista de tarefas
 type TodoManager struct {
 	ListTodo map[string]models.Todo

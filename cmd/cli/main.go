@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Joaquim-Jambo/DoneGo/models"
 	"github.com/Joaquim-Jambo/DoneGo/services"
+	"github.com/Joaquim-Jambo/DoneGo/utils"
 )
 
 func main() {
@@ -28,39 +30,39 @@ func main() {
 		switch menu {
 		case 1:
 			for _, todo_ := range todo.GetTodo() {
-				emojiCategoria := utils.obterEmojiCategoria(todo_.categoria)
+				emojiCategoria := utils.ObterEmojiCategoria(todo_.Categoria)
 					fmt.Println("🗂️ Lista de Todos:")
 				fmt.Println("-------------------------------")
 				fmt.Printf(
 					"%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n",
 					emojiCategoria,
-					todo_.categoria,
-					todo_.titulo,
-					todo_.descricao,
+					todo_.Categoria,
+					todo_.Titulo,
+					todo_.Descricao,
 					todo_.DateCreat.Format("02/01/2006 15:04"),
-					utils.statusEmoji(todo_.estado),
+					utils.StatusEmoji(todo_.Estado),
 				)
 
 			}
 		case 2:
 			fmt.Println("Digite a categoria que deseja a listar: ")
 			categoria, _ := reader.ReadString('\n')
-			todos, err := todo.getByCategory(categoria)
+			todos, err := todo.GetByCategory(categoria)
 			if err != nil {
 				fmt.Println(err)
 			}
 			for _, todoN := range todos {
-				emojiCategoria := obterEmojiCategoria(todoN.categoria)
+				emojiCategoria := utils.ObterEmojiCategoria(todoN.Categoria)
 				fmt.Println("🗂️ Lista de Todos:")
 				fmt.Println("-------------------------------")
 				fmt.Printf(
 					"%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n	",
 					emojiCategoria,
-					todoN.categoria,
-					todoN.titulo,
-					todoN.descricao,
+					todoN.Categoria,
+					todoN.Titulo,
+					todoN.Descricao,
 					todoN.DateCreat.Format("02/01/2006 15:04"),
-					statusEmoji(todoN.estado),
+					utils.StatusEmoji(todoN.Estado),
 				)
 			}
 		case 3:
@@ -70,7 +72,7 @@ func main() {
 			descricao, _ := reader.ReadString('\n')
 			fmt.Println("Digite a categoria da tarefa")
 			categoria, _ := reader.ReadString('\n')
-			todo.addTodo(titulo, descricao, categoria)
+			todo.AddTodo(titulo, descricao, categoria)
 		case 4:
 			{
 				fmt.Println("Digite o id do Todo que deseja editar: ")
@@ -79,7 +81,7 @@ func main() {
 				titulo, _ := reader.ReadString('\n')
 				fmt.Println("Digite a descrição da tarefa")
 				descricao, _ := reader.ReadString('\n')
-				todo.updateTodo(id, Todo{titulo: titulo, descricao: descricao})
+				todo.UpdateTodo(id, models.Todo{Titulo: titulo, Descricao: descricao})
 			}
 		}
 	}
