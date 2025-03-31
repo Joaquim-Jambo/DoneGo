@@ -2,7 +2,7 @@ package utils
 
 import "fmt"
 
-func menu() {
+func Menu() {
 	fmt.Println("===================================")
 	fmt.Println()
 	fmt.Println("1)✅ Listar todos os Todos")

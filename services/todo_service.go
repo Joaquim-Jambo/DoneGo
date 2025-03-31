@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Joaquim-Jambo/DoneGo/models"
+	"github.com/Joaquim-Jambo/DoneGo/utils"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +21,7 @@ func NewTodo() *TodoManager {
 	}
 }
 
-func (t *TodoManager) AddTodo(titulo string, descricao string, categoria string) models.Todo {
+func (t *TodoManager) AddTodo(titulo string, descricao string, categoria string) (models.Todo, error) {
 	id := uuid.New().String()
 	t.ListTodo[id] = models.Todo{
 		ID:         id,
@@ -31,7 +32,11 @@ func (t *TodoManager) AddTodo(titulo string, descricao string, categoria string)
 		DateCreat:  time.Now(),
 		DateUpdate: time.Now(),
 	}
-	return t.ListTodo[id]
+	err := utils.CreateDb(t.ListTodo[id])
+	if err != nil {
+		return models.Todo{}, err
+	}
+	return t.ListTodo[id], nil
 }
 
 func (t *TodoManager) GetByCategory(categoria string) ([]models.Todo, error) {
@@ -88,10 +93,14 @@ func (t *TodoManager) UpdateTodo(id string, todo models.Todo) (models.Todo, erro
 	return todoAtual, nil
 }
 
-func (t *TodoManager) GetTodo() []models.Todo {
+func (t *TodoManager) GetTodo() ([]models.Todo, error) {
 	var todos []models.Todo
+
 	for _, todo := range t.ListTodo {
 		todos = append(todos, todo)
 	}
-	return todos
+	if len(todos) == 0 {
+		return nil, errors.New("❌ Nenhum tarefa cadastrada")
+	}
+	return todos, nil
 }

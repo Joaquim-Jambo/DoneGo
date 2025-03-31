@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Joaquim-Jambo/DoneGo/models"
 	"github.com/Joaquim-Jambo/DoneGo/services"
@@ -14,6 +15,7 @@ func main() {
 	todo := services.NewTodo()
 	reader := bufio.NewReader(os.Stdin)
 	var menu int
+	var categoria string
 
 	for count := 0; ; count++ {
 		fmt.Println("===================================")
@@ -27,11 +29,16 @@ func main() {
 		fmt.Println("===================================")
 		fmt.Print("Digite a opção desejada: ")
 		fmt.Scan(&menu)
+		reader.ReadString('\n')
 		switch menu {
 		case 1:
-			for _, todo_ := range todo.GetTodo() {
+			todos, err := todo.GetTodo()
+			if err != nil {
+				fmt.Println(err)
+			}
+			for _, todo_ := range todos {
 				emojiCategoria := utils.ObterEmojiCategoria(todo_.Categoria)
-					fmt.Println("🗂️ Lista de Todos:")
+				fmt.Println("🗂️ Lista de Todos:")
 				fmt.Println("-------------------------------")
 				fmt.Printf(
 					"%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n",
@@ -42,11 +49,10 @@ func main() {
 					todo_.DateCreat.Format("02/01/2006 15:04"),
 					utils.StatusEmoji(todo_.Estado),
 				)
-
 			}
 		case 2:
 			fmt.Println("Digite a categoria que deseja a listar: ")
-			categoria, _ := reader.ReadString('\n')
+			fmt.Scan(&categoria)
 			todos, err := todo.GetByCategory(categoria)
 			if err != nil {
 				fmt.Println(err)
@@ -64,14 +70,18 @@ func main() {
 					todoN.DateCreat.Format("02/01/2006 15:04"),
 					utils.StatusEmoji(todoN.Estado),
 				)
+				fmt.Println()
 			}
 		case 3:
 			fmt.Println("Digite o titulo da tarfa")
 			titulo, _ := reader.ReadString('\n')
+			titulo = strings.TrimSpace(titulo)
 			fmt.Println("Digite a descrição da tarefa")
 			descricao, _ := reader.ReadString('\n')
+			descricao = strings.TrimSpace(descricao)
 			fmt.Println("Digite a categoria da tarefa")
 			categoria, _ := reader.ReadString('\n')
+			categoria = strings.TrimSpace(categoria)
 			todo.AddTodo(titulo, descricao, categoria)
 		case 4:
 			{
@@ -83,7 +93,12 @@ func main() {
 				descricao, _ := reader.ReadString('\n')
 				todo.UpdateTodo(id, models.Todo{Titulo: titulo, Descricao: descricao})
 			}
+		case 0:
+			{
+				os.Exit(0)
+			}
 		}
+
 	}
 
 }
