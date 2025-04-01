@@ -3,6 +3,7 @@ package interfaces
 import (
 	"github.com/Joaquim-Jambo/DoneGo/models"
 )
+
 type gerenTodo interface {
 	AddTodo(titulo string, descricao string, categoria string) models.Todo
 	UpdateTodo(id string, todo models.Todo) (models.Todo, error)
@@ -10,5 +11,4 @@ type gerenTodo interface {
 	GetTodo() []models.Todo
 	CompletedTodo(id string) (models.Todo, error)
 	GetByCategory(categoria string) models.Todo
-	GetById(id string) models.Todo
 }

@@ -1,7 +1,10 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/Joaquim-Jambo/DoneGo/models"
@@ -39,65 +42,154 @@ func (t *TodoManager) AddTodo(titulo string, descricao string, categoria string)
 	return t.ListTodo[id], nil
 }
 
-func (t *TodoManager) GetByCategory(categoria string) ([]models.Todo, error) {
+func GetByCategory(categoria string) ([]models.Todo, error) {
 	var todos []models.Todo
-	for _, todo := range t.ListTodo {
+	var listTodo []models.Todo
+	data, err := os.ReadFile("data/db.json")
+	if err != nil {
+		return nil, errors.New("Erro ao carregar o arquivo db.json")
+	}
+	err = json.Unmarshal(data, &todos)
+	if err != nil {
+		return nil, errors.New("Erro ao deserealizar a lista")
+	}
+
+	for _, todo := range todos {
 		if todo.Categoria == categoria {
-			todos = append(todos, todo)
+			listTodo = append(listTodo, todo)
 		}
 	}
-	if len(todos) == 0 {
+	if len(listTodo) == 0 {
 		return nil, errors.New("❌ Nenhuma tarefa encontrada para essa categoria")
 	}
-	return todos, nil
+	return listTodo, nil
 }
 
-func (t *TodoManager) GetById(id string) (models.Todo, error) {
-	todo, exist := t.ListTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
+func CompletedTodo(id string) (string, error) {
+	var todos []models.Todo
+	data, err := os.ReadFile("data/db.json")
+	if err != nil {
+		return "", errors.New("Erro ao ler o arquivo db.json")
 	}
-	return todo, nil
-}
-
-func (t *TodoManager) CompletedTodo(id string) (models.Todo, error) {
-	todo, exist := t.ListTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
+	err = json.Unmarshal(data, &todos)
+	found := false
+	var titulo string
+	// pegar o id
+	for i, t := range todos {
+		if t.ID == id {
+			if !todos[i].Estado {
+				todos[i].Estado = true
+				titulo = todos[i].Titulo
+				todos[i].DateUpdate = time.Now()
+				found = true
+				break
+			} else {
+				return fmt.Sprintf("⚠️ A tarefa '%s' já está concluída!", t.Titulo), nil
+			}
+		}
 	}
-	todo.Estado = true
-	todo.DateUpdate = time.Now()
-	t.ListTodo[id] = todo
-	return todo, nil
-}
-
-func (t *TodoManager) DeleteTodo(id string) (models.Todo, error) {
-	todo, exist := t.ListTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
+	if !found {
+		return "", errors.New("Nenhuma tarefa encontrada com este ID")
 	}
-	delete(t.ListTodo, id)
-	return todo, nil
-}
-
-func (t *TodoManager) UpdateTodo(id string, todo models.Todo) (models.Todo, error) {
-	todoAtual, exist := t.ListTodo[id]
-	if !exist {
-		return models.Todo{}, errors.New("Todo não encontrado")
+	ndata, err := json.Marshal(todos)
+	if err != nil {
+		return "", errors.New("Erro ao serializar os dados")
 	}
-	todoAtual.Titulo = todo.Titulo
-	todoAtual.Descricao = todo.Descricao
-	todoAtual.Categoria = todo.Categoria
-	todoAtual.DateUpdate = time.Now()
-	t.ListTodo[id] = todoAtual
-	return todoAtual, nil
+	err = os.WriteFile("data/db.json", ndata, 0644)
+	if err != nil {
+		return "", errors.New("Erro ao gravar no arquivo db.json")
+	}
+
+	return fmt.Sprintf("✅ A tarefa '%s' foi concluída com sucesso!", titulo), nil
 }
 
-func (t *TodoManager) GetTodo() ([]models.Todo, error) {
+func DeleteTodo(id string) (string, error) {
+	var todos []models.Todo
+	found := false
+	var UpdateTodo []models.Todo
+	data, err := os.ReadFile("data/db.json")
+	if err != nil {
+		return "", errors.New("Erro ao ler o arquivo db.json")
+	}
+	err = json.Unmarshal(data, &todos)
+	if err != nil {
+		return "", errors.New("Erro ao serializar os dados")
+	}
+	for _, t := range todos {
+		if t.ID == id {
+			found = true
+			continue
+		}
+		UpdateTodo = append(UpdateTodo, t)
+	}
+	if !found {
+		return "", errors.New("Nenhuma tarefa encontrada com este ID")
+	}
+	ndata, err := json.Marshal(UpdateTodo)
+	if err != nil {
+		return "", errors.New("Erro ao codificar os dados")
+	}
+	err = os.WriteFile("data/db.json", ndata, 0644)
+	if err != nil {
+		return "", errors.New("Erro ao salvar os dados")
+	}
+	return "Tarefa apaga com sucesso!", nil
+}
+
+func UpdateTodo(id string, todo models.Todo) (string, error) {
 	var todos []models.Todo
 
-	for _, todo := range t.ListTodo {
-		todos = append(todos, todo)
+	data, err := os.ReadFile("data/db.json")
+	if err != nil {
+		return "", errors.New("Erro ao ler o arquivo db.json")
+	}
+	err = json.Unmarshal(data, &todos)
+	if err != nil {
+		return "", errors.New("Erro ao deserealizar a lista")
+	}
+	found := false
+	for i, t := range todos {
+		if t.ID == id {
+			if todo.Categoria != "" && todo.Categoria != todos[i].Categoria {
+				todos[i].Categoria = todo.Categoria
+			}
+			if todo.Descricao != "" && todo.Descricao != todos[i].Descricao {
+				todos[i].Descricao = todo.Descricao
+			}
+			if todo.Titulo != "" && todo.Titulo != todos[i].Titulo {
+				todos[i].Titulo = todo.Titulo
+			}
+			if todo.Categoria != "" || todo.Descricao != "" || todo.Titulo != "" {
+				todos[i].DateUpdate = time.Now()
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		return "", errors.New("Nenhuma tarefa encontrada com este ID")
+	}
+	ndata, err := json.Marshal(todos)
+	if err != nil {
+		return "", errors.New("Erro ao codificar")
+	}
+	err = os.WriteFile("data/db.json", ndata, 0644)
+	if err != nil {
+		return "", errors.New("Erro ao acatualizar")
+	}
+	return "Tarefa actualizada com sucesso", nil
+}
+
+func GetTodo() ([]models.Todo, error) {
+	var todos []models.Todo
+
+	data, err := os.ReadFile("data/db.json")
+	if err != nil {
+		return nil, errors.New("Erro ao ler o arquivo db.json")
+	}
+	err = json.Unmarshal(data, &todos)
+	if err != nil {
+		return nil, errors.New("Erro ao deserealizar")
 	}
 	if len(todos) == 0 {
 		return nil, errors.New("❌ Nenhum tarefa cadastrada")

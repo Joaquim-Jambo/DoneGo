@@ -16,89 +16,109 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	var menu int
 	var categoria string
+	var id string
 
-	for count := 0; ; count++ {
-		fmt.Println("===================================")
-		fmt.Println()
-		fmt.Println("1)✅ Listar todos os Todos")
-		fmt.Println("2)📂 Listar por Categoria")
-		fmt.Println("3)📝 Adicionar Novo Todo")
-		fmt.Println("4)✏️ Editar Todo")
-		fmt.Println("5)❌ Deletar Todo")
-		fmt.Println()
-		fmt.Println("===================================")
-		fmt.Print("Digite a opção desejada: ")
+	for {
+		utils.Menu()
+		fmt.Println("Digite a opção desejada: ")
 		fmt.Scan(&menu)
 		reader.ReadString('\n')
+
 		switch menu {
 		case 1:
-			todos, err := todo.GetTodo()
+			utils.ClearScreen()
+			fmt.Println("📜 Lista de Todas as Tarefas")
+			fmt.Println("---------------------------------")
+			todos, err := services.GetTodo()
 			if err != nil {
 				fmt.Println(err)
 			}
 			for _, todo_ := range todos {
 				emojiCategoria := utils.ObterEmojiCategoria(todo_.Categoria)
-				fmt.Println("🗂️ Lista de Todos:")
-				fmt.Println("-------------------------------")
-				fmt.Printf(
-					"%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n",
-					emojiCategoria,
-					todo_.Categoria,
-					todo_.Titulo,
-					todo_.Descricao,
-					todo_.DateCreat.Format("02/01/2006 15:04"),
-					utils.StatusEmoji(todo_.Estado),
-				)
+				fmt.Printf("%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n\n",
+					emojiCategoria, todo_.Categoria, todo_.Titulo, todo_.Descricao,
+					todo_.DateCreat.Format("02/01/2006 15:04"), utils.StatusEmoji(todo_.Estado))
 			}
+
 		case 2:
-			fmt.Println("Digite a categoria que deseja a listar: ")
+			utils.ClearScreen()
+			fmt.Println("🔍 Filtrar Tarefas por Categoria")
+			fmt.Print("Digite a categoria desejada: ")
 			fmt.Scan(&categoria)
-			todos, err := todo.GetByCategory(categoria)
+			reader.ReadString('\n')
+			todos, err := services.GetByCategory(categoria)
 			if err != nil {
 				fmt.Println(err)
 			}
 			for _, todoN := range todos {
 				emojiCategoria := utils.ObterEmojiCategoria(todoN.Categoria)
-				fmt.Println("🗂️ Lista de Todos:")
-				fmt.Println("-------------------------------")
-				fmt.Printf(
-					"%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n	",
-					emojiCategoria,
-					todoN.Categoria,
-					todoN.Titulo,
-					todoN.Descricao,
-					todoN.DateCreat.Format("02/01/2006 15:04"),
-					utils.StatusEmoji(todoN.Estado),
-				)
-				fmt.Println()
+				fmt.Printf("%s [%s] - %s\n📋 Descrição: %s\n🕒 Criado em: %s\n⚙️ Status: %s\n\n",
+					emojiCategoria, todoN.Categoria, todoN.Titulo, todoN.Descricao,
+					todoN.DateCreat.Format("02/01/2006 15:04"), utils.StatusEmoji(todoN.Estado))
 			}
+
 		case 3:
-			fmt.Println("Digite o titulo da tarfa")
+			utils.ClearScreen()
+			fmt.Println("📝 Criar Nova Tarefa")
+			fmt.Print("Digite o título da tarefa: ")
 			titulo, _ := reader.ReadString('\n')
 			titulo = strings.TrimSpace(titulo)
-			fmt.Println("Digite a descrição da tarefa")
+			fmt.Print("Digite a descrição da tarefa: ")
 			descricao, _ := reader.ReadString('\n')
 			descricao = strings.TrimSpace(descricao)
-			fmt.Println("Digite a categoria da tarefa")
+			fmt.Print("Digite a categoria da tarefa: ")
 			categoria, _ := reader.ReadString('\n')
 			categoria = strings.TrimSpace(categoria)
 			todo.AddTodo(titulo, descricao, categoria)
+			fmt.Println("✅ Tarefa adicionada com sucesso!")
+
 		case 4:
-			{
-				fmt.Println("Digite o id do Todo que deseja editar: ")
-				id, _ := reader.ReadString('\n')
-				fmt.Println("Digite o titulo da tarfa")
-				titulo, _ := reader.ReadString('\n')
-				fmt.Println("Digite a descrição da tarefa")
-				descricao, _ := reader.ReadString('\n')
-				todo.UpdateTodo(id, models.Todo{Titulo: titulo, Descricao: descricao})
+			utils.ClearScreen()
+			fmt.Println("✏️ Editar Tarefa")
+			fmt.Print("Digite o ID da tarefa: ")
+			fmt.Scan(&id)
+			reader.ReadString('\n')
+			fmt.Print("Digite o novo título [OPCIONAL]: ")
+			titulo, _ := reader.ReadString('\n')
+			titulo = strings.TrimSpace(titulo)
+			fmt.Print("Digite a nova descrição [OPCIONAL]: ")
+			descricao, _ := reader.ReadString('\n')
+			descricao = strings.TrimSpace(descricao)
+			data, err := services.UpdateTodo(id, models.Todo{Titulo: titulo, Descricao: descricao})
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("✅ Tarefa atualizada com sucesso!", data)
 			}
+
+		case 5:
+			utils.ClearScreen()
+			fmt.Println("🗑️ Apagar Tarefa")
+			fmt.Print("Digite o ID da tarefa: ")
+			fmt.Scan(&id)
+			data, err := services.DeleteTodo(id)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("✅ Tarefa apagada com sucesso!", data)
+			}
+
+		case 6:
+			utils.ClearScreen()
+			fmt.Println("✅ Concluir Tarefa")
+			fmt.Print("Digite o ID da tarefa: ")
+			fmt.Scan(&id)
+			data, err := services.CompletedTodo(id)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("🎉 Tarefa concluída com sucesso!", data)
+			}
+
 		case 0:
-			{
-				os.Exit(0)
-			}
+			utils.ClearScreen()
+			fmt.Println("👋 Saindo... Até logo!")
+			os.Exit(0)
 		}
-
 	}
-
 }

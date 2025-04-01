@@ -21,7 +21,7 @@ func CreateDb(todo models.Todo) error {
 		return errors.New("Erro ao ler o arquivo db.json")
 	}
 	var todos []models.Todo
-	err = json.Unmarshal(data, &todo)
+	err = json.Unmarshal(data, &todos)
 	if err != nil {
 		return errors.New("Erro ao deserealizar a lista")
 	}
